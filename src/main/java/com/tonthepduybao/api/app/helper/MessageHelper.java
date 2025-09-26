@@ -27,11 +27,11 @@ public interface MessageHelper {
 
     ResponseMessage build(String message, int status);
 
-    ResponseMessage build(String message, int status, List<?> args); // Sử dụng List<?> thay vì List<Object>
+    ResponseMessage build(String message, int status, List<Object> args); // Sử dụng List<?> thay vì List<Object>
 
     <S> Supplier<S> build(Class<S> e, String messageCode, S... args); // Sử dụng Generics rõ ràng
 
-    Supplier<?> buildDataNotFound(Object... args); // Giữ Object... args nhưng có thể kiểm tra lại
+    Supplier buildDataNotFound(Object... args); // Giữ Object... args nhưng có thể kiểm tra lại
 
-    Supplier<?> buildUnauthorized();
+    Supplier buildUnauthorized();
 }
