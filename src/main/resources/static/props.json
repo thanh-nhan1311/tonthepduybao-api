@@ -1,0 +1,83 @@
+﻿[
+  {
+    "name": "Màu",
+    "type": "CORRUGATED",
+    "values": "xanh ngọc, trắng sữa, vàng kem, xanh dươi tím, xanh dương tươi,đỏ đậm, nâu đất, xám lông chuột, xanh rêu, caro, trắng trong",
+    "order": 1
+  },
+  {
+    "name": "Độ dày",
+    "type": "CORRUGATED",
+    "values": "mỏng,0.25mm,0.30mm,0.35mm,0.40mm,0.45mm,0.50mm,0.57mm",
+    "order": 2
+  },
+  {
+    "name": "Xuất xứ",
+    "type": "CORRUGATED",
+    "values": "Đông Á,Hoa Sen,Việt Nhật,Nhập Khẩu,Việt Úc,Phương Nam",
+    "order": 3
+  },
+  {
+    "name": "Loại",
+    "type": "CORRUGATED",
+    "values": "9 sóng vuông,5 sóng vuông, sóng tròn, sóng la phong, vòm 1 đầu, vòm cong đều,sóng ngói, phẳng, tôn panel có gân, tôn panel không gân, máng sối, diềm, nóc thanh, nóc ke",
+    "order": 4
+  },
+  {
+    "name": "Phụ kiện tôn",
+    "type": "CORRUGATED",
+    "values": "phun Pu,cách nhiệt 5ly,cách nhiệt 10ly,cách nhiệt 20ly,cách nhiệt Việt Nhật",
+    "order": 5
+  },
+
+  {
+    "name": "Độ dày",
+    "type": "IRON",
+    "values": "0.9ly,1.0 ly,1.1 ly,1.2 ly,1.3 ly,1.4 ly,1.7 ly, 1.8ly,2.0 ly,3.0 ly,3.5 ly,3.7 ly,4.0 ly,4.5ly,5.0 ly",
+    "order": 1
+  },
+  {
+    "name": "Loại",
+    "type": "IRON",
+    "values": "mạ kẽm,đen",
+    "order": 2
+  },
+  {
+    "name": "Chiều dài",
+    "type": "IRON",
+    "values": "3m,4m,4.5m,5m,6m",
+    "order": 3
+  },
+  {
+    "name": "Xuất xứ",
+    "type": "IRON",
+    "values": "Vinaone,Hoà Phát,Đông Á,Nam Kim,Vinaone,Visa,Tuấn Võ,TVP,Sunrise,TPG,Ánh Hoà",
+    "order": 4
+  },
+
+
+  {
+    "name": "Loại",
+    "type": "STEEL",
+    "values": "mạ kẽm,đen",
+    "order": 1
+  },
+  {
+    "name": "Số ký",
+    "type": "STEEL",
+    "values": "36.5kg,41kg,74kg,84kg,128kg,220.2kg,30kg,22.5kg,13.1kg,9kg,51.5kg,4.5kg,4.7kg,5.7kg,8.3kg,11.5Kg,15Kg,20Kg,25Kg,30Kg,mỏng,trung,dày",
+    "order": 2
+  },
+  {
+    "name": "Chiều dài",
+    "type": "STEEL",
+    "values": "3m,4m,4.5m,5m,6m",
+    "order": 3
+  },
+  {
+    "name": "Xuất xứ",
+    "type": "STEEL",
+    "values": "Á Châu,An Khánh,Posco,Nhà Bè,Vinaone",
+    "order": 4
+  }
+]

@@ -1,0 +1,78 @@
+## Server
+server:
+  error:
+    whitelabel:
+      enabled: false
+    path: /error
+  compression:
+    enabled: true
+  servlet:
+    session:
+      cookie:
+        http-only: true
+  port: 7700
+
+
+## Spring
+spring:
+  application:
+    name: tonthepduybao-api
+  profiles:
+    active: dev # default active profile is dev
+
+  main:
+    lazy-initialization: true
+    banner-mode: off
+
+  # Stream
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+  data:
+    jdbc:
+      repositories:
+        enabled: false
+
+  # JPA
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+        hibernate-dialect: org.hibernate.dialect.PostgreSQL95Dialect
+        naming:
+          physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+          implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+    hibernate:
+      ddl-auto: update
+
+  # Thymeleaf
+  thymeleaf:
+    cache: false
+    enabled: true
+    check-template: true
+    check-template-location: true
+    suffix: .html
+    prefix: classpath:/templates/
+    servlet:
+      content-type: text/html; charset=utf-8
+    encoding: UTF-8
+
+  # Email
+  mail:
+    default-encoding: UTF-8
+    host: smtp.gmail.com
+    port: 587
+    username: nr.email.system@gmail.com
+    password: bbjumdedvnrjmukh
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+        debug: true
+    protocol: smtp
+    test-connection: false

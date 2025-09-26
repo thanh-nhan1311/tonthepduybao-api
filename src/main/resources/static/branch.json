@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "mapEmbedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3918.113955079036!2d106.76055951533895!3d10.878936560266576!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3174d87bdb2f422f%3A0x64ece178087167e4!2zODAgxJAuIFPhu5EgNSwgS2h1IHBo4buRIDIsIFRo4bunIMSQ4bupYywgVGjDoG5oIHBo4buRIEjhu5MgQ2jDrSBNaW5oLCBWaWV0bmFt!5e0!3m2!1sen!2s!4v1655721555311!5m2!1sen!2s",
+    "mapUrl": "https://www.google.com/maps?ll=10.878931,106.762748&z=16&t=m&hl=en&gl=US&mapclient=embed&q=80+%C4%90.+S%E1%BB%91+5+Khu+ph%E1%BB%91+2+Th%E1%BB%A7+%C4%90%E1%BB%A9c+Th%C3%A0nh+ph%E1%BB%91+H%E1%BB%93+Ch%C3%AD+Minh",
+    "name": "Trụ sở: Linh Xuân",
+    "address": "80 đường 5, khu phố 4, phường Linh Xuân, TP Thủ Đức",
+    "phone": "0939.922.078",
+    "zalo": "0939.922.078",
+    "manager": "Miss Liên"
+  },
+  {
+    "id": 2,
+    "mapEmbedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3918.45810765192!2d106.80881312867167!3d10.852719336037921!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3175274b936a34ff%3A0x424629b3d648267e!2zNjMgSG_DoG5nIEjhu691IE5hbSwgTG9uZyBUaOG6oW5oIE3hu7ksIFF14bqtbiA5LCBUaMOgbmggcGjhu5EgSOG7kyBDaMOtIE1pbmgsIFZpZXRuYW0!5e0!3m2!1sen!2s!4v1655722543407!5m2!1sen!2s",
+    "mapUrl": "https://maps.google.com/maps?ll=10.852714,106.813298&z=16&t=m&hl=en&gl=US&mapclient=embed&q=63%20Ho%C3%A0ng%20H%E1%BB%AFu%20Nam%20Long%20Th%E1%BA%A1nh%20M%E1%BB%B9%20Qu%E1%BA%ADn%209%20Th%C3%A0nh%20ph%E1%BB%91%20H%E1%BB%93%20Ch%C3%AD%20Minh",
+    "name": "Chi nhánh 1: Hoàng Hữu Nam",
+    "address": "63 Hoàng Hữu Nam, phường Tân Phú, TP. Thủ Đức",
+    "phone": "0937.658.178",
+    "zalo": "0937.658.178",
+    "manager": "Miss Kiều"
+  },
+  {
+    "id": 3,
+    "mapEmbedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3918.5211733753727!2d106.81382421533894!3d10.847908260835226!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x317527356223eaf7%3A0xfdf8d6a3a4ad2624!2zMTkwIE5ndXnhu4VuIFbEg24gVMSDbmcsIExvbmcgVGjhuqFuaCBN4bu5LCBRdeG6rW4gOSwgVGjDoG5oIHBo4buRIEjhu5MgQ2jDrSBNaW5oLCBWaWV0bmFt!5e0!3m2!1sen!2s!4v1655722664817!5m2!1sen!2s",
+    "mapUrl": "https://maps.google.com/maps?ll=10.847903,106.816013&z=16&t=m&hl=en&gl=US&mapclient=embed&q=190%20Nguy%E1%BB%85n%20V%C4%83n%20T%C4%83ng%20Long%20Th%E1%BA%A1nh%20M%E1%BB%B9%20Qu%E1%BA%ADn%209%20Th%C3%A0nh%20ph%E1%BB%91%20H%E1%BB%93%20Ch%C3%AD%20Minh",
+    "name": "Chi nhánh 2: Nguyễn Văn Tăng",
+    "address": "190 Nguyễn Văn Tăng, phường Long Thạnh Mỹ, TP. Thủ Đức",
+    "phone": "0906.658.178",
+    "zalo": "0906.658.178",
+    "manager": "Miss Thủy"
+  }
+]
