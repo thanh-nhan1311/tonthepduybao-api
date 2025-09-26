@@ -11,7 +11,7 @@ spring:
         show_sql: false
   # Datasource
   datasource:
-    url: jdbc:postgresql://localhost:5432/ttdbdb
+    url: jdbc:postgresql://localhost:59033/ttdbdb
     username: ttdbuser
     password: passwordPWD
     driver-class-name: org.postgresql.Driver
