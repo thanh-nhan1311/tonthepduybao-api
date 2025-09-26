@@ -644,7 +644,7 @@ public class DebtServiceImpl implements DebtService {
         } catch (IOException e) {
             throw new SystemException();
         }
-    }/
+    }*/
 
     // Private
     private Customer getCustomer(final Long customerId) {
