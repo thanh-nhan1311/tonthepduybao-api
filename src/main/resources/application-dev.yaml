@@ -12,6 +12,6 @@ spring:
   # Datasource
   datasource:
     url: jdbc:postgresql://localhost:59033/ttdbdb
-    username: ttdbuser
-    password: passwordPWD
+    username: postgres
+    password: 
     driver-class-name: org.postgresql.Driver
