@@ -9,7 +9,7 @@ PORT=7700
 # Script
 START_TIME=$(date +%s)
 echo "\n+++ Start +++"
-git fetch && git pull master
+git fetch && git pull master master
 
 echo "\n-- Installing..."
 rm -rf build
