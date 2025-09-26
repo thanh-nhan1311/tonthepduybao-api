@@ -1,5 +1,10 @@
 package com.tonthepduybao.api.service.debt;
 
+import java.io.ByteArrayOutputStream;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+
 import com.tonthepduybao.api.app.exception.model.ExistenceException;
 import com.tonthepduybao.api.app.exception.model.SystemException;
 import com.tonthepduybao.api.app.helper.MessageHelper;
