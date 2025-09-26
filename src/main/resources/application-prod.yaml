@@ -1,3 +1,7 @@
+mybatis:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
 ## Spring
 spring:
   # JPA
@@ -7,7 +11,7 @@ spring:
         show_sql: false
   # Datasource
   datasource:
-    url:
-    username:
-    password:
+    url: jdbc:postgresql://localhost:5432/ttdbdb
+    username: ttdbuser
+    password: passwordPWD
     driver-class-name: org.postgresql.Driver
