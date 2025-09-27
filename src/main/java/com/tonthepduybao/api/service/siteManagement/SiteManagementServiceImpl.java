@@ -54,7 +54,8 @@ public class SiteManagementServiceImpl implements SiteManagementService {
         SiteContact siteContact = siteContactRepository.findById(id)
                 .orElseThrow(messageHelper.buildDataNotFound("ID liên hệ", id));
         siteContact.setResolvedFlag(true);
-        siteContact.setCreatedAt(TimeUtils.nowStr());
+        //siteContact.setCreatedAt(TimeUtils.nowStr());
+        siteContact.setUpdatedAt(TimeUtils.nowStr());
         siteContactRepository.saveAndFlush(siteContact);
     }
 

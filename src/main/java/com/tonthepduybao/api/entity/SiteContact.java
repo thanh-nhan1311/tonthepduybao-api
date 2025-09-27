@@ -40,5 +40,9 @@ public class SiteContact {
 
     @Column(name = "created_at", length = 14, nullable = false)
     private String createdAt;
+    
+    @Column(name = "updated_at", length = 14)
+    private String updatedAt;
+
 
 }
