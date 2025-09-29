@@ -19,7 +19,6 @@ echo "\n-- Building..."
 fuser -k $PORT/tcp
 nohup java -jar -Dspring.profiles.active=prod -Dserver.port=$PORT build/libs/tonthepduybao-api-1.0.jar >/dev/null 2>&1 &
 
-mkdir -p logs
 nohup ./gradlew bootRun > "logs/app-$(date +%F).log" 2>&1 &
 disown
 
