@@ -1,3 +1,4 @@
+
 ## Server
 server:
   error:
@@ -18,7 +19,7 @@ spring:
   application:
     name: tonthepduybao-api
   profiles:
-    active: dev # default active profile is dev
+    active: prod # default active profile is dev
 
   main:
     lazy-initialization: true
