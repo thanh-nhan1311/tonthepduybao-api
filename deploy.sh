@@ -9,7 +9,7 @@ PORT=7700
 # Script
 START_TIME=$(date +%s)
 echo "\n+++ Start +++"
-git fetch && git pull master master
+git fetch && git pull origin master
 
 echo "\n-- Installing..."
 rm -rf build
@@ -18,6 +18,9 @@ gradle clean build -x test
 echo "\n-- Building..."
 fuser -k $PORT/tcp
 nohup java -jar -Dspring.profiles.active=prod -Dserver.port=$PORT build/libs/tonthepduybao-api-1.0.jar >/dev/null 2>&1 &
+
+./gradlew clean bootJar
+./gradlew bootRun
 
 END_TIME=$(date +%s)
 EXEC_TIME=$(($END_TIME-$START_TIME))
