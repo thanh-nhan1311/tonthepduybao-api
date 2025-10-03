@@ -9,6 +9,7 @@ import com.tonthepduybao.api.entity.ProductPropertyDetail;
 import com.tonthepduybao.api.entity.PropertyDetail;
 import com.tonthepduybao.api.entity.enumeration.EProductStatus;
 import com.tonthepduybao.api.entity.enumeration.EType;
+import com.tonthepduybao.api.mapper.ProductMapper;
 import com.tonthepduybao.api.model.product.*;
 import com.tonthepduybao.api.repository.*;
 import com.tonthepduybao.api.security.utils.SecurityUtils;
