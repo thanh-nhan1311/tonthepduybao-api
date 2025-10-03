@@ -12,9 +12,6 @@ import com.tonthepduybao.api.entity.enumeration.EType;
 import com.tonthepduybao.api.model.product.*;
 import com.tonthepduybao.api.repository.*;
 import com.tonthepduybao.api.security.utils.SecurityUtils;
-import com.tonthepduybao.api.app.helper.MessageHelper;
-import com.tonthepduybao.api.app.utils.DataBuilder;
-import com.tonthepduybao.api.app.utils.TimeUtils;
 import com.tonthepduybao.api.entity.ProductCategory;
 import com.tonthepduybao.api.model.productCategory.ProductCategoryData;
 import com.tonthepduybao.api.model.productCategory.ProductCategoryForm;  
@@ -43,6 +40,8 @@ import java.util.*;
 @Service
 public class ProductServiceImpl implements ProductService {
 
+    private static final org.apache.poi.ss.usermodel.DataFormatter DATA_FORMATTER = new org.apache.poi.ss.usermodel.DataFormatter();
+
     private final MessageHelper messageHelper;
     private final ProductRepository productRepository;
     private final BranchRepository branchRepository;
@@ -52,6 +51,8 @@ public class ProductServiceImpl implements ProductService {
     private final ProductMapper productMapper;
 
     @Override
+    @Override
+    @Transactional(rollbackFor = Throwable.class)
     public void create(final ProductForm form) {
         Long currentUserId = SecurityUtils.getCurrentUserId(true);
         String now = TimeUtils.nowStr();
@@ -80,6 +81,8 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Override
+    @Transactional(rollbackFor = Throwable.class)
     public void createAll(final ProductListForm listForm) {
         listForm.data().forEach(this::create);
     }
@@ -97,7 +100,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(rollbackFor = Throwable.class)
     public void deleteAll(final String type) {
-        if (type.equals("ALL")) {
+        if ("ALL".equals(type)) {
             productPropertyDetailRepository.deleteAll();
             productRepository.deleteAll();
         } else {
@@ -203,7 +206,7 @@ public class ProductServiceImpl implements ProductService {
             }
         }
     }
-    
+
     public ResponseEntity<ByteArrayResource> downloadTemplate() {
         try (XSSFWorkbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("Mau_san_pham");
@@ -255,7 +258,9 @@ public class ProductServiceImpl implements ProductService {
                 return errors;
             }
 
-            for (int rowIndex = 1; rowIndex <= sheet.getPhysicalNumberOfRows(); rowIndex++) {
+            int firstRow = sheet.getFirstRowNum();
+            int lastRow = sheet.getLastRowNum();
+            for (int rowIndex = firstRow + 1; rowIndex <= lastRow; rowIndex++) {
                 Row row = sheet.getRow(rowIndex);
                 if (row == null) continue;
 
@@ -269,10 +274,11 @@ public class ProductServiceImpl implements ProductService {
                     continue;
                 }
 
-                // Validate quantity is a number
+                // Validate quantity is a number (normalize commas/spaces)
                 int quantity;
                 try {
-                    quantity = Integer.parseInt(quantityStr);
+                    String normalizedQty = quantityStr == null ? "" : quantityStr.trim().replaceAll("[\\s,]", "");
+                    quantity = Integer.parseInt(normalizedQty);
                 } catch (NumberFormatException e) {
                     errors.add("Dòng " + (rowIndex + 1) + " có lỗi: Số lượng không hợp lệ.");
                     continue;
@@ -298,8 +304,18 @@ public class ProductServiceImpl implements ProductService {
 
                 Product savedProduct = productRepository.save(product);
 
-                // Handle product properties (if any)
-                saveProductPropertyDetail(propertyName, savedProduct);
+                // Handle product properties (if any) - support comma-separated property names
+                if (propertyName != null && propertyName.trim().length() > 0) {
+                    String[] propertyNames = propertyName.split(",");
+                    for (String pn : propertyNames) {
+                        String trimmed = pn.trim();
+                        try {
+                            saveProductPropertyDetailByName(trimmed, savedProduct);
+                        } catch (RuntimeException ex) {
+                            errors.add("Dòng " + (rowIndex + 1) + " thuộc tính lỗi: " + ex.getMessage());
+                        }
+                    }
+                }
             }
         } catch (IOException e) {
             errors.add("Lỗi đọc file Excel: " + e.getMessage());
@@ -308,9 +324,10 @@ public class ProductServiceImpl implements ProductService {
     }
 
     // Private function to get cell value
+    // Use DataFormatter to preserve displayed cell values
     private String getCellValue(Row row, int cellIndex) {
         Cell cell = row.getCell(cellIndex);
-        return cell != null ? cell.toString() : "";
+        return cell != null ? DATA_FORMATTER.formatCellValue(cell) : "";
     }
 
     // Private function to get Branch by name (assuming you want to look up by name)
@@ -320,17 +337,16 @@ public class ProductServiceImpl implements ProductService {
     }
 
     // Private function to save product properties
-    private void saveProductPropertyDetail(String propertyName, Product savedProduct) {
-        // Example code for saving product property details, depending on your business logic
-        PropertyDetail propertyDetail = propertyDetailRepository.findByName(propertyName)
-                .orElseThrow(() -> new RuntimeException("Thuộc tính không tồn tại: " + propertyName));
+    private void saveProductPropertyDetailByName(String propertyName, Product savedProduct) {
+    PropertyDetail propertyDetail = propertyDetailRepository.findByName(propertyName)
+        .orElseThrow(() -> new RuntimeException("Thuộc tính không tồn tại: " + propertyName));
 
-        ProductPropertyDetail productPropertyDetail = ProductPropertyDetail.builder()
-                .product(savedProduct)
-                .propertyDetail(propertyDetail)
-                .build();
+    ProductPropertyDetail productPropertyDetail = ProductPropertyDetail.builder()
+        .product(savedProduct)
+        .propertyDetail(propertyDetail)
+        .build();
 
-        productPropertyDetailRepository.save(productPropertyDetail);
+    productPropertyDetailRepository.save(productPropertyDetail);
     }
 }
                    
