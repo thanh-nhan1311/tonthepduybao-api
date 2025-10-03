@@ -113,7 +113,8 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductListData getAll(final String search, final List<String> type, final List<Long> branchId, final int page, final int pageSize) {
+    public ProductListData getAll(final String search, final String fromDate, final String toDate,
+                                final List<String> type, final List<Long> customerId, final int page, final int pageSize) {
         String searchParam = "%" + search.toLowerCase() + "%";
         String status = EProductStatus.ACTIVE.name();
 
