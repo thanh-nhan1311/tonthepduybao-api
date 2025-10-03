@@ -55,31 +55,43 @@ public class MessageHelperImpl implements MessageHelper {
     }
 
     @Override
-    public Supplier build(final Class clazz, final String messageCode, final Object... args) {
+    @SuppressWarnings("unchecked")
+    public <S> Supplier<S> build(final Class<S> clazz, final String messageCode, final Object... args) {
         String message = get(messageCode);
         List<Object> listArgs = List.of(args);
 
-        try {
-            Exception e = (Exception) clazz.getDeclaredConstructor().newInstance();
-
-            if (e instanceof DataException)
-                return DataException.supplier(message, listArgs);
-
-            return () -> new SystemException();
-        } catch (Exception e) {
-            e.printStackTrace();
+        // If requested exception is DataException (or subclass), return DataException supplier
+        if (DataException.class.equals(clazz) || DataException.class.isAssignableFrom((Class<?>) clazz)) {
+            return (Supplier<S>) DataException.supplier(message, listArgs);
         }
 
-        return () -> new SystemException();
+        // For other exceptions, try to create a supplier that constructs the exception with a message via reflection
+        try {
+            // Try constructor with (String) parameter
+            var ctor = clazz.getDeclaredConstructor(String.class);
+            return () -> {
+                try {
+                    return (S) ctor.newInstance(message);
+                } catch (Exception ex) {
+                    throw new SystemException(message, ex);
+                }
+            };
+        } catch (NoSuchMethodException ignored) {
+            // Fall back to supplier that throws SystemException with message
+        }
+
+        return () -> {
+            throw new SystemException(message);
+        };
     }
 
     @Override
-    public Supplier buildDataNotFound(final Object... args) {
+    public Supplier<? extends RuntimeException> buildDataNotFound(final Object... args) {
         return build(DataException.class, MessageConstant.SYS_DATA_NOT_FOUND, args);
     }
 
     @Override
-    public Supplier buildUnauthorized() {
+    public Supplier<? extends RuntimeException> buildUnauthorized() {
         String message = get(MessageConstant.SYS_UNAUTHORIZED);
         return () -> new BadCredentialsException(message);
     }

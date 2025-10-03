@@ -31,7 +31,7 @@ public interface MessageHelper {
 
     <S> Supplier<S> build(Class<S> e, String messageCode, S... args); // Sử dụng Generics rõ ràng
 
-    Supplier buildDataNotFound(Object... args); // Giữ Object... args nhưng có thể kiểm tra lại
+    Supplier<? extends RuntimeException> buildDataNotFound(Object... args); // Giữ Object... args nhưng có thể kiểm tra lại
 
-    Supplier buildUnauthorized();
+    Supplier<? extends RuntimeException> buildUnauthorized();
 }
