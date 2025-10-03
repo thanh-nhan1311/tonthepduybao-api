@@ -9,6 +9,8 @@ import com.tonthepduybao.api.entity.ProductPropertyDetail;
 import com.tonthepduybao.api.entity.PropertyDetail;
 import com.tonthepduybao.api.entity.enumeration.EProductStatus;
 import com.tonthepduybao.api.entity.enumeration.EType;
+import com.tonthepduybao.api.model.PagingWrapper;
+import com.tonthepduybao.api.model.product.BranchModel;
 import com.tonthepduybao.api.mapper.ProductMapper;
 import com.tonthepduybao.api.model.product.*;
 import com.tonthepduybao.api.repository.*;
@@ -23,6 +25,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.util.StringUtils;
+
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
