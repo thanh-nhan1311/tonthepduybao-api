@@ -15,12 +15,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * ProductCategoryServiceImpl
- *
- * @author khal
- * @since 2023/07/23
- */
 @RequiredArgsConstructor
 @Service
 public class ProductCategoryServiceImpl implements ProductCategoryService {

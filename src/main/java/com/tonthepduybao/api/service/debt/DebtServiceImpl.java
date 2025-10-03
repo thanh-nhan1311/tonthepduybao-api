@@ -58,6 +58,10 @@ public class DebtServiceImpl implements DebtService {
     private final int START_ROW = 7;
     private final int MAX_ROW = 506;
 
+    // Patterns used across methods
+    private static final Pattern DATE_PATTERN = Pattern.compile("^\\d{8}$");
+    private static final Pattern LONG_VALUE_PATTERN = Pattern.compile("^\\d+(__).*$");
+
     private final MessageHelper messageHelper;
 
     private final DebtMapper debtMapper;
@@ -106,7 +110,7 @@ public class DebtServiceImpl implements DebtService {
 
     @Override
     @Transactional(rollbackFor = Throwable.class)
-    public List<String> createFromFile(final MultipartFile file) {
+    /*public List<String> createFromFile(final MultipartFile file) {
         List<String> errors = new ArrayList<>();
 
         Pattern DATE_PATTERN = Pattern.compile("^\\d{8}$");
@@ -246,7 +250,226 @@ public class DebtServiceImpl implements DebtService {
         } catch (IOException e) {
             throw new SystemException();
         }
+    }*/
+public List<String> createFromFile(final MultipartFile file) {
+    List<String> errors = new ArrayList<>();
+
+    Pattern DATE_PATTERN = Pattern.compile("^\\d{8}$");
+    Pattern LONG_VALUE_PATTERN = Pattern.compile("^\\d+(__).*$");
+
+    try (XSSFWorkbook workbook = new XSSFWorkbook(file.getInputStream())) {
+        XSSFSheet sheet = workbook.getSheetAt(0);
+        if (sheet == null) {
+            errors.add("File Excel không có sheet nào.");
+            return errors;
+        }
+
+        // Validate Row 0: Mã công nợ
+        String id = validateRow(sheet, 0, 1, "Mã công nợ", errors);
+        if (!StringUtils.hasLength(id))
+            errors.add("[Cell B1] Mã công nợ là trường bắt buộc");
+        else if (debtRepository.existsById(id))
+            errors.add("[Cell B1] Mã công nợ [" + id + "] đã tồn tại");
+
+        // Validate Row 1: Ngày tạo công nợ
+        String date = validateRow(sheet, 1, 1, "Ngày tạo công nợ", errors);
+        if (!DATE_PATTERN.matcher(date).matches())
+            errors.add("[Cell B2] Ngày tạo công nợ có định dạng YYYYMMDD");
+
+        // Validate Row 2: Nhà cung cấp (customerId)
+        String customerIdValue = validateRow(sheet, 2, 1, "Nhà cung cấp", errors);
+        Long customerId = validateCustomerId(customerIdValue, errors);
+
+        // Validate Row 3: Danh mục (EType)
+        String typeValue = validateRow(sheet, 3, 1, "Danh mục", errors);
+        EType type = validateEType(typeValue, errors);
+
+        // Validate Row 4: Thuộc tính
+        String propertyValue = validateRow(sheet, 4, 1, "Thuộc tính", errors);
+        List<Long> propertyIds = validateProperties(propertyValue, errors);
+
+        // Validate và parse dữ liệu các sản phẩm
+        if (Objects.nonNull(type) && !CollectionUtils.isEmpty(propertyIds)) {
+            List<DebtDetailForm> debtDetailForms = processDebtDetails(sheet, propertyIds, errors);
+
+            if (CollectionUtils.isEmpty(debtDetailForms)) {
+                errors.add("Không có sản phẩm nào trong danh sách hoặc dữ liệu bị lỗi.");
+            }
+
+            if (CollectionUtils.isEmpty(errors)) {
+                DebtForm debtForm = DebtForm.builder()
+                        .id(id)
+                        .date(date)
+                        .propertyIds(propertyIds)
+                        .type(type.name())
+                        .customerId(customerId)
+                        .items(debtDetailForms)
+                        .build();
+                create(debtForm);
+            }
+        }
+
+        return errors;
+    } catch (IOException e) {
+        throw new SystemException("Lỗi khi đọc file Excel", e);
     }
+}
+
+// Helper Method để validate dữ liệu trong từng dòng
+private String validateRow(XSSFSheet sheet, int rowIndex, int cellIndex, String fieldName, List<String> errors) {
+    XSSFRow row = sheet.getRow(rowIndex);
+    if (row == null) {
+        errors.add("Dòng " + (rowIndex + 1) + " không tồn tại trong file Excel.");
+        return null;
+    }
+    return ExcelUtils.getCellValue(sheet.getWorkbook(), row, cellIndex);
+}
+
+// Helper Method để validate customerId (Row 2)
+    private Long validateCustomerId(String customerIdValue, List<String> errors) {
+    if (!StringUtils.hasLength(customerIdValue) || customerIdValue == null || !LONG_VALUE_PATTERN.matcher(customerIdValue).matches()) {
+        errors.add("[Cell B4] Nhà cung cấp không chính xác.");
+        return null;
+    }
+    try {
+        return Long.parseLong(customerIdValue.split("__")[0]);
+    } catch (NumberFormatException e) {
+        errors.add("[Cell B4] Nhà cung cấp không hợp lệ.");
+        return null;
+    }
+}
+
+// Helper Method để validate EType (Row 3)
+    private EType validateEType(String typeValue, List<String> errors) {
+    if (!StringUtils.hasLength(typeValue)) {
+        errors.add("[Cell B3] Danh mục không được bỏ trống.");
+        return null;
+    }
+    try {
+        return EType.valueOf(typeValue);
+    } catch (IllegalArgumentException e) {
+        errors.add("[Cell B3] Danh mục không chính xác.");
+        return null;
+    }
+}
+
+// Helper Method để validate Thuộc tính (Row 4)
+    private List<Long> validateProperties(String propertyValue, List<String> errors) {
+    if (!StringUtils.hasLength(propertyValue)) {
+        errors.add("[Cell B5] Thuộc tính không chính xác.");
+        return Collections.emptyList();
+    }
+
+    try {
+        return Stream.of(propertyValue.split(","))
+                .map(String::trim)
+                .filter(StringUtils::hasLength)
+                .map(Long::parseLong)
+                .collect(Collectors.toList());
+    } catch (NumberFormatException e) {
+        errors.add("[Cell B5] Thuộc tính không hợp lệ.");
+        return Collections.emptyList();
+    }
+}
+
+// Helper Method để parse dữ liệu các sản phẩm
+    private List<DebtDetailForm> processDebtDetails(XSSFSheet sheet, List<Long> propertyIds, List<String> errors) {
+    List<DebtDetailForm> debtDetailForms = new ArrayList<>();
+
+    for (int rowIndex = START_ROW; rowIndex < MAX_ROW; rowIndex++) {
+        XSSFRow bodyRow = sheet.getRow(rowIndex);
+        if (bodyRow == null) continue;
+
+        int colIndex = 1;
+        String branchValue = ExcelUtils.getCellValue(sheet.getWorkbook(), bodyRow, colIndex++);
+        if (!LONG_VALUE_PATTERN.matcher(branchValue).matches()) continue;
+        Long branch = Long.valueOf(branchValue.split("__")[0]);
+
+        String name = ExcelUtils.getCellValue(sheet.getWorkbook(), bodyRow, colIndex++);
+        if (!StringUtils.hasLength(name)) continue;
+
+        String note = ExcelUtils.getCellValue(sheet.getWorkbook(), bodyRow, colIndex++);
+    Map<Long, Long> properties = parseProperties(sheet, bodyRow, colIndex, propertyIds);
+    // after parseProperties, colIndex has advanced by propertyIds.size()
+    colIndex += propertyIds.size();
+
+    // Other fields
+        double weight = parseDouble(ExcelUtils.getCellValue(sheet.getWorkbook(), bodyRow, colIndex++));
+        int quantity = parseInt(ExcelUtils.getCellValue(sheet.getWorkbook(), bodyRow, colIndex++));
+        double avgProportion = parseDouble(ExcelUtils.getCellValue(sheet.getWorkbook(), bodyRow, colIndex++));
+        BigDecimal unitPrice = parseBigDecimal(ExcelUtils.getCellValue(sheet.getWorkbook(), bodyRow, colIndex++));
+        BigDecimal totalUnitPrice = parseBigDecimal(ExcelUtils.getCellValue(sheet.getWorkbook(), bodyRow, colIndex++));
+        BigDecimal totalPrice = parseBigDecimal(ExcelUtils.getCellValue(sheet.getWorkbook(), bodyRow, colIndex));
+
+        DebtDetailForm debtDetailForm = DebtDetailForm.builder()
+                .name(name)
+                .note(note)
+                .properties(properties)
+                .weight(weight)
+                .quantity(quantity)
+                .avgProportion(avgProportion)
+                .unitPrice(unitPrice)
+                .totalPrice(totalPrice)
+                .totalUnitPrice(totalUnitPrice)
+                .branch(branch)
+                .build();
+
+        debtDetailForms.add(debtDetailForm);
+    }
+
+    return debtDetailForms;
+}
+
+// Helper Method để parse BigDecimal
+// Improved parsers (handle commas, spaces)
+private BigDecimal parseBigDecimal(String value) {
+    if (!StringUtils.hasLength(value)) return BigDecimal.ZERO;
+    try {
+        String normalized = value.trim().replaceAll("\\s", "").replaceAll(",", "");
+        return new BigDecimal(normalized);
+    } catch (NumberFormatException e) {
+        return BigDecimal.ZERO;
+    }
+}
+
+// Helper Method để parse Integer
+private int parseInt(String value) {
+    if (!StringUtils.hasLength(value)) return 0;
+    try {
+        String normalized = value.trim().replaceAll("\\s", "").replaceAll(",", "");
+        return Integer.parseInt(normalized);
+    } catch (NumberFormatException e) {
+        return 0;
+    }
+}
+
+// Helper Method để parse Double
+private double parseDouble(String value) {
+    if (!StringUtils.hasLength(value)) return 0;
+    try {
+        String normalized = value.trim().replaceAll("\\s", "").replaceAll(",", "");
+        return new BigDecimal(normalized).setScale(2, RoundingMode.FLOOR).doubleValue();
+    } catch (NumberFormatException e) {
+        return 0;
+    }
+}
+
+// Helper Method để parse Properties
+    private Map<Long, Long> parseProperties(XSSFSheet sheet, XSSFRow bodyRow, int colIndex, List<Long> propertyIds) {
+    Map<Long, Long> properties = new HashMap<>();
+    for (Long propId : propertyIds) {
+        String propertyDetailValue = ExcelUtils.getCellValue(sheet.getWorkbook(), bodyRow, colIndex++);
+        if (StringUtils.hasLength(propertyDetailValue) && LONG_VALUE_PATTERN.matcher(propertyDetailValue).matches()) {
+            try {
+                Long propertyDetailId = Long.valueOf(propertyDetailValue.split("__")[0]);
+                properties.put(propId, propertyDetailId);
+            } catch (NumberFormatException ignored) {
+                // ignore malformed property detail
+            }
+        }
+    }
+    return properties;
+}
 
     @Override
     @Transactional(rollbackFor = Throwable.class)

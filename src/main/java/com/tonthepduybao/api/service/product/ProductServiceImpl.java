@@ -9,26 +9,29 @@ import com.tonthepduybao.api.entity.ProductPropertyDetail;
 import com.tonthepduybao.api.entity.PropertyDetail;
 import com.tonthepduybao.api.entity.enumeration.EProductStatus;
 import com.tonthepduybao.api.entity.enumeration.EType;
-import com.tonthepduybao.api.mapper.ProductMapper;
-import com.tonthepduybao.api.model.PagingWrapper;
-import com.tonthepduybao.api.model.branch.BranchModel;
 import com.tonthepduybao.api.model.product.*;
-import com.tonthepduybao.api.model.property.PropertyDetailData;
 import com.tonthepduybao.api.repository.*;
 import com.tonthepduybao.api.security.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * ProductServiceImpl
  *
- * @author khal
- * @since 2023/07/23
+ * @author Nhan
+ * @since 2025/07/23
  */
 @RequiredArgsConstructor
 @Service
@@ -196,5 +199,147 @@ public class ProductServiceImpl implements ProductService {
             }
         }
     }
+    @RequiredArgsConstructor
+@Service
+public class ProductServiceImpl implements ProductService {
 
+    private final MessageHelper messageHelper;
+    private final ProductRepository productRepository;
+    private final BranchRepository branchRepository;
+    private final PropertyDetailRepository propertyDetailRepository;
+    private final ProductPropertyDetailRepository productPropertyDetailRepository;
+
+    // Existing methods for creating, deleting, getting products...
+
+    /**
+     * Method to download the template for bulk product upload.
+     */
+    public ResponseEntity<ByteArrayResource> downloadTemplate() {
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Mau_san_pham");
+
+            // Create header row
+            Row headerRow = sheet.createRow(0);
+            headerRow.createCell(0).setCellValue("Tên sản phẩm");
+            headerRow.createCell(1).setCellValue("Số lượng");
+            headerRow.createCell(2).setCellValue("Chi nhánh");
+            headerRow.createCell(3).setCellValue("Thuộc tính");
+
+            // Example data row
+            Row row = sheet.createRow(1);
+            row.createCell(0).setCellValue("<Nhập tên sản phẩm>");
+            row.createCell(1).setCellValue("<Nhập số lượng>");
+            row.createCell(2).setCellValue("<Chọn chi nhánh>");
+            row.createCell(3).setCellValue("<Chọn thuộc tính>");
+
+            // Auto size columns
+            for (int i = 0; i < 4; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            // Convert workbook to ByteArrayResource for download
+            try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                workbook.write(out);
+                ByteArrayResource resource = new ByteArrayResource(out.toByteArray());
+
+                // Return the file as a response for download
+                return ResponseEntity.ok()
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Mau_san_pham.xlsx")
+                        .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                        .body(resource);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Error generating Excel template", e);
+        }
+    }
+
+    /**
+     * Method to upload bulk products from an Excel file.
+     */
+    public List<String> uploadFromFile(MultipartFile file) {
+        List<String> errors = new ArrayList<>();
+        try (XSSFWorkbook workbook = new XSSFWorkbook(file.getInputStream())) {
+            Sheet sheet = workbook.getSheetAt(0);
+            if (sheet == null) {
+                errors.add("File Excel không có sheet nào.");
+                return errors;
+            }
+
+            for (int rowIndex = 1; rowIndex <= sheet.getPhysicalNumberOfRows(); rowIndex++) {
+                Row row = sheet.getRow(rowIndex);
+                if (row == null) continue;
+
+                String name = getCellValue(row, 0);
+                String quantityStr = getCellValue(row, 1);
+                String branchName = getCellValue(row, 2);
+                String propertyName = getCellValue(row, 3);
+
+                if (StringUtils.isEmpty(name) || StringUtils.isEmpty(quantityStr) || StringUtils.isEmpty(branchName) || StringUtils.isEmpty(propertyName)) {
+                    errors.add("Dòng " + (rowIndex + 1) + " có lỗi: Tên sản phẩm, Số lượng, Chi nhánh, hoặc Thuộc tính không hợp lệ.");
+                    continue;
+                }
+
+                // Validate quantity is a number
+                int quantity;
+                try {
+                    quantity = Integer.parseInt(quantityStr);
+                } catch (NumberFormatException e) {
+                    errors.add("Dòng " + (rowIndex + 1) + " có lỗi: Số lượng không hợp lệ.");
+                    continue;
+                }
+
+                Branch branch = getBranchByName(branchName);
+                if (branch == null) {
+                    errors.add("Dòng " + (rowIndex + 1) + " có lỗi: Chi nhánh không tồn tại.");
+                    continue;
+                }
+
+                // Add the product to the database
+                Product product = new Product();
+                product.setName(name);
+                product.setQuantity(quantity);
+                product.setBranch(branch);
+                product.setCreatedAt(TimeUtils.nowStr());
+                product.setCreatedBy(SecurityUtils.getCurrentUserId(true));
+                product.setUpdatedAt(TimeUtils.nowStr());
+                product.setUpdatedBy(SecurityUtils.getCurrentUserId(true));
+                product.setStatus(EProductStatus.ACTIVE);
+                product.setType(EType.PRODUCT); // Set type according to your logic
+
+                Product savedProduct = productRepository.save(product);
+
+                // Handle product properties (if any)
+                saveProductPropertyDetail(propertyName, savedProduct);
+            }
+        } catch (IOException e) {
+            errors.add("Lỗi đọc file Excel: " + e.getMessage());
+        }
+        return errors;
+    }
+
+    // Private function to get cell value
+    private String getCellValue(Row row, int cellIndex) {
+        Cell cell = row.getCell(cellIndex);
+        return cell != null ? cell.toString() : "";
+    }
+
+    // Private function to get Branch by name (assuming you want to look up by name)
+    private Branch getBranchByName(String branchName) {
+        return branchRepository.findByName(branchName)
+                .orElse(null); // Handle as needed, maybe return null or throw an exception
+    }
+
+    // Private function to save product properties
+    private void saveProductPropertyDetail(String propertyName, Product savedProduct) {
+        // Example code for saving product property details, depending on your business logic
+        PropertyDetail propertyDetail = propertyDetailRepository.findByName(propertyName)
+                .orElseThrow(() -> new RuntimeException("Thuộc tính không tồn tại: " + propertyName));
+
+        ProductPropertyDetail productPropertyDetail = ProductPropertyDetail.builder()
+                .product(savedProduct)
+                .propertyDetail(propertyDetail)
+                .build();
+
+        productPropertyDetailRepository.save(productPropertyDetail);
+    }
 }
