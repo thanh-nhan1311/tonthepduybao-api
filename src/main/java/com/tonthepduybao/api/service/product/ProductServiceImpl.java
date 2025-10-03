@@ -12,6 +12,12 @@ import com.tonthepduybao.api.entity.enumeration.EType;
 import com.tonthepduybao.api.model.product.*;
 import com.tonthepduybao.api.repository.*;
 import com.tonthepduybao.api.security.utils.SecurityUtils;
+import com.tonthepduybao.api.app.helper.MessageHelper;
+import com.tonthepduybao.api.app.utils.DataBuilder;
+import com.tonthepduybao.api.app.utils.TimeUtils;
+import com.tonthepduybao.api.entity.ProductCategory;
+import com.tonthepduybao.api.model.productCategory.ProductCategoryData;
+import com.tonthepduybao.api.model.productCategory.ProductCategoryForm;  
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -38,14 +44,12 @@ import java.util.*;
 public class ProductServiceImpl implements ProductService {
 
     private final MessageHelper messageHelper;
-
-    private final ProductMapper productMapper;
-
-    private final UserRepository userRepository;
-    private final BranchRepository branchRepository;
     private final ProductRepository productRepository;
+    private final BranchRepository branchRepository;
     private final PropertyDetailRepository propertyDetailRepository;
     private final ProductPropertyDetailRepository productPropertyDetailRepository;
+    private final UserRepository userRepository;
+    private final ProductMapper productMapper;
 
     @Override
     public void create(final ProductForm form) {
@@ -199,21 +203,7 @@ public class ProductServiceImpl implements ProductService {
             }
         }
     }
-    @RequiredArgsConstructor
-@Service
-public class ProductServiceImpl implements ProductService {
-
-    private final MessageHelper messageHelper;
-    private final ProductRepository productRepository;
-    private final BranchRepository branchRepository;
-    private final PropertyDetailRepository propertyDetailRepository;
-    private final ProductPropertyDetailRepository productPropertyDetailRepository;
-
-    // Existing methods for creating, deleting, getting products...
-
-    /**
-     * Method to download the template for bulk product upload.
-     */
+    
     public ResponseEntity<ByteArrayResource> downloadTemplate() {
         try (XSSFWorkbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("Mau_san_pham");
@@ -343,3 +333,4 @@ public class ProductServiceImpl implements ProductService {
         productPropertyDetailRepository.save(productPropertyDetail);
     }
 }
+                   
