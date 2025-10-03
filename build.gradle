@@ -53,6 +53,4 @@ dependencies {
     compileOnly group: 'software.amazon.awssdk', name: 'aws-sdk-java', version: '2.25.30'
     compileOnly 'org.projectlombok:lombok:1.18.24' // Use the latest version available
     annotationProcessor 'org.projectlombok:lombok:1.18.24'
-    compileOnly 'org.mapstruct:mapstruct:1.5.2.Final'
-    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.2.Final
 }
